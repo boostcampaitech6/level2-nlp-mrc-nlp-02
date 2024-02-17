@@ -1,0 +1,20 @@
+seed: 2024
+
+data:
+    output_path: ./outputs/test_dataset/0/
+
+model:
+    model_name: klue/bert-base
+    save_total_limit: 5
+    save_steps: 1000
+
+train:
+    learning_rate: 5e-5
+    batch_size: 8
+    max_epoch: 3
+    warmup_steps: 0
+    weight_decay: 0
+
+log:
+    logging_dir: ./logs
+    logging_steps: 500
