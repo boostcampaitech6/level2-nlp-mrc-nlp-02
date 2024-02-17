@@ -255,18 +255,18 @@ $RECYCLE.BIN/
 wandb/
 
 #dataset
-data/
+#data/
 # code
 #code/*.py
 # data
 *.csv
 
 #output
-outputs/
+#outputs/
 #model
-models/
+#models/
 #prediction
-prediction/
+#prediction/
 # checkpoints
 checkpoint*
 
