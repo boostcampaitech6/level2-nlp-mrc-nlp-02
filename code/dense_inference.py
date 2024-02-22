@@ -89,7 +89,7 @@ def main():
     # True일 경우 : run passage retrieval
     if data_args.eval_retrieval:
         datasets = run_dpr_retrieval(
-            tokenizer.tokenize, datasets, model_args, training_args, data_args,
+            tokenizer, datasets, model_args, training_args, data_args,
         )
 
     # eval or predict mrc model
@@ -110,7 +110,7 @@ def run_dpr_retrieval(
     print("***Using DPR Embedding***")
     
     args = TrainingArguments(
-        output_dir="dense_retireval",
+        output_dir="dense_retrieval",
         evaluation_strategy="epoch",
         learning_rate=1e-5,
         per_device_train_batch_size=20,
@@ -119,6 +119,7 @@ def run_dpr_retrieval(
         weight_decay=0.01
     )
     
+    num_sample = 100
     override = False
     topk = data_args.top_k_retrieval
     model_name = model_args.model_name_or_path
@@ -127,7 +128,7 @@ def run_dpr_retrieval(
 
     # Query에 맞는 Passage들을 Retrieval 합니다.
     retriever = DenseRetrieval(
-        args=args, num_neg=2, tokenizer=tokenize_fn, p_encoder=p_encoder, q_encoder=q_encoder
+        args=args, num_neg=2, num_sample=num_sample, tokenizer=tokenize_fn, p_encoder=p_encoder, q_encoder=q_encoder
     )
     retriever.train(override=override)
     df = retriever.get_relevant_doc(datasets["validation"], topk=topk)

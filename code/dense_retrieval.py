@@ -38,12 +38,17 @@ class DenseRetrieval:
             self,
             args,
             num_neg,
+            num_sample,
             tokenizer,
             p_encoder,
             q_encoder,
             data_path: str = "../data",
             context_path: str = "wikipedia_documents.json",
     ) -> NoReturn:
+        
+        if num_sample is None:
+            num_sample = int(1e9)
+
         self.args = args
 
         train_path = os.path.join(data_path, 'train_dataset')
@@ -51,12 +56,13 @@ class DenseRetrieval:
         train_valid_dataset = load_from_disk(train_path)
         test_dataset = load_from_disk(test_path)
 
-        self.full_train = concatenate_datasets(
+        concat_train = concatenate_datasets(
         [
             train_valid_dataset["train"].flatten_indices(),
             train_valid_dataset["validation"].flatten_indices(),
         ]
         )
+        self.full_train = concat_train[:num_sample]
 
         # self.train_dataset = train_valid_dataset['train']
         # self.valid_dataset = train_valid_dataset['validation']
@@ -73,6 +79,7 @@ class DenseRetrieval:
         self.contexts = list(
             dict.fromkeys([v["text"] for v in self.wiki.values()])
         )
+        self.contexts = self.contexts[:num_sample]
         print(f"Lengths of unique contexts : {len(self.contexts)}")
 
         self.prepare_in_batch_negative(dataset=self.full_train, num_neg=num_neg)
@@ -116,10 +123,10 @@ class DenseRetrieval:
                     p_with_neg.append(c)
                     p_with_neg.extend(p_neg)
                     break
-        pprint(f"dataset['question'] : {dataset['question']}")
+        # dataset = dataset.dropna(subset='question', axis=0)
         # for i in tqdm(range(len(query)), desc='q'):
         #     q_token = self.tokenizer([query['question'][i]], padding="max_length", truncation=True, return_tensors='pt').to(args.device)
-        q_seqs = tokenizer(dataset['question'], padding="max_length", truncation=True, return_tensors='pt')
+        q_seqs = tokenizer([dataset['question']], padding="max_length", truncation=True, return_tensors='pt')
         p_seqs = tokenizer(p_with_neg, padding="max_length", truncation=True, return_tensors='pt')
 
         max_len = p_seqs['input_ids'].size(-1)
@@ -405,6 +412,7 @@ if __name__ == "__main__":
     p_encoder = BertEncoder.from_pretrained(model_checkpoint).to(args.device)
     q_encoder = BertEncoder.from_pretrained(model_checkpoint).to(args.device)
 
+    num_sample = None
     override = False
     topk = 10
 
