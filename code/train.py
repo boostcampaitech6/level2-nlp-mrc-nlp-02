@@ -38,7 +38,7 @@ def main(configs):
     #Wandb 설정 
     wandb.login()
     run_name = f"{configs['model']['model_name']}_{configs['train']['batch_size']}_{configs['train']['max_epoch']}_{configs['train']['learning_rate']}"
-    wandb.init(project="donghyeon", entity="klue2-dk", name= run_name)
+    wandb.init(project="minari", entity="klue2-dk", name= run_name)
     
     #DataTrainingArguments 불러오기
     data_args = DataTrainingArguments
@@ -80,7 +80,7 @@ def main(configs):
 
     # logging 설정
     logging.basicConfig(
-        format="%(asctime)s - %(levelname)s - %(name)s -    %(message)s",
+        format="%(asctime)s - %(levelname)s - %(name)s - %(message)s",
         datefmt="%m/%d/%Y %H:%M:%S",
         handlers=[logging.StreamHandler(sys.stdout)],
     )

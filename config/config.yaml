@@ -1,20 +1,52 @@
-seed: 2024
+seed: 2024     # Fix random state with a seed
 
 data:
-    output_path: ./outputs/test_dataset/0/
+    output_path: ./models/train_dataset_roberta_bm25_k20/
+    # The output directory where the model predictions and checkpoints will be written.
+    use_bm25: True
+    overwrite_output_dir: False
+    # Overwrite the content of the output directory. Use this to continue training if output_dir points to a checkpoint directory.
+
+
 
 model:
-    model_name: klue/bert-base
+    model_name: klue/roberta-large
     save_total_limit: 5
     save_steps: 1000
 
 train:
     learning_rate: 5e-5
-    batch_size: 8
+    batch_size: 16
     max_epoch: 3
     warmup_steps: 0
+    # Linear warmup over warmup_stepsd.
     weight_decay: 0
+    # Weight decay for AdamW if we apply some.
+    do_train: True
+    # Whether to run training.
+    do_eval: True
+    # Whether to run eval on the dev set.
+    do_predict: True
+    # Whether to run on the test set.
+    num_train_epochs: 3
+    # Total number of training epochs to perform.
+    logging_steps: 1000
+    # Log every X updates steps.
+    save_total_limit: 2
+    # Limit the total amount of checkpoints. Deletes the older checkpoints in the output_dir. Default is unlimited checkpoints
+    evaluation_strategy: steps
+    # The evaluation strategy to use.
+    save_steps: 1000
+    # Save checkpoint every X updates steps.
+    eval_steps: 1000
+    # Run an evaluation every X steps.
+    load_best_model_at_end: True
+    # Whether or not to load the best model found during training at the end of training.
+    metric_for_best_model: exact_match
+    # The metric to use to compare two different models.
+    greater_is_better: True
+    # Whether the `metric_for_best_model` should be maximized or not.
 
 log:
     logging_dir: ./logs
-    logging_steps: 500
+    logging_steps: 1000

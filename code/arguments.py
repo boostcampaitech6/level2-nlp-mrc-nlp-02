@@ -1,6 +1,25 @@
 from dataclasses import dataclass, field
 from typing import Optional
+from collections import namedtuple 
+from types import SimpleNamespace
+import yaml
 
+from transformers import TrainingArguments
+
+def load_yaml(yaml_path):
+    config_file = None
+    with open(yaml_path) as f:
+        config_file = yaml.load(f, Loader=yaml.FullLoader)
+    config = namedtuple("config", config_file.keys())
+    config_tuple = config(**config_file)
+
+    return config_tuple
+
+all_args = load_yaml('../config/config.yaml')
+data_args = SimpleNamespace(**all_args.data)
+model_args = SimpleNamespace(**all_args.model)
+data_args = SimpleNamespace(**all_args.data)
+train_args = SimpleNamespace(**all_args.train)
 
 @dataclass
 class ModelArguments:
@@ -82,11 +101,123 @@ class DataTrainingArguments:
         default=64, metadata={"help": "Define how many clusters to use for faiss."}
     )
     top_k_retrieval: int = field(
-        default=10,
+        default=20,
         metadata={
             "help": "Define how many top-k passages to retrieve based on similarity."
         },
     )
     use_faiss: bool = field(
         default=False, metadata={"help": "Whether to build with faiss"}
+    )
+    use_bm25: bool = field(
+    default=data_args.use_bm25, metadata={"help": "Whether to use bm25"}
+    )
+
+
+class CustomTrainingArguments(TrainingArguments):
+    """
+    Arguments pertaining to what data we are going to input our model for training and eval.
+    """
+    output_path: str = field(
+        default=data_args.output_path,
+        metadata={
+            "help": "The output directory where the model predictions will be written."
+        },
+    )
+    overwrite_output_dir: bool = field(
+        default=data_args.overwrite_output_dir,
+        metadata={
+            "help": (
+                "Overwrite the content of the output directory. "
+                "Use this to continue training if output_dir points to a checkpoint directory."
+            )
+        },
+    )
+    do_train: bool = field(
+        default=train_args.do_train,
+        metadata={
+            "help": "Whether to run training."
+        },
+    )
+    do_eval: bool = field(
+        default=train_args.do_eval,
+        metadata={
+            "help": "Whether to run eval on the dev set."
+        },
+    )
+    do_predict: bool = field(
+        default=train_args.do_predict,
+        metadata={
+            "help": "Whether to run on the test set."
+        },
+    )
+    batch_size: int = field(
+        default=train_args.batch_size,
+        metadata={
+            "help": "Batch size for training"
+        }
+    )
+    learning_rate: float = field(
+        default=train_args.learning_rate,
+        metadata={
+            "help": "The initial learning rate for AdamW."
+        },
+    )
+    weight_decay: float = field(
+        default=train_args.weight_decay,
+        metadata={
+            "help": "Weight decay for AdamW if we apply some."
+        },
+    )
+    num_train_epochs: float = field(
+        default=train_args.num_train_epochs,
+        metadata={
+            "help": "Total number of training epochs to perform."
+        },
+    )
+    warmup_steps: int = field(
+        default=train_args.warmup_steps,
+        metadata={
+            "help": "Linear warmup over warmup_steps."
+        },
+    )
+    logging_steps: int = field(
+        default=train_args.logging_steps,
+        metadata={
+            "help": "Log every X updates steps."
+        },
+    )
+    save_total_limit: Optional[int] = field(
+        default=train_args.save_total_limit,
+        metadata={
+            "help": (
+                "Limit the total amount of checkpoints. "
+                "Deletes the older checkpoints in the output_dir. Default is unlimited checkpoints"
+            )
+        },
+    )
+    save_steps: int = field(
+        default=train_args.save_steps,
+        metadata={
+            "help": "Save checkpoint every X updates steps."
+        },
+    )
+    eval_steps: int = field(
+        default=train_args.eval_steps,
+        metadata={
+            "help": "Run an evaluation every X steps."
+        },
+    )
+    load_best_model_at_end: Optional[bool] = field(
+        default=train_args.load_best_model_at_end,
+        metadata={
+            "help": "Whether or not to load the best model found during training at the end of training."},
+    )
+    metric_for_best_model: Optional[str] = field(
+        default=train_args.metric_for_best_model, metadata={
+            "help": "The metric to use to compare two different models."}
+    )
+    greater_is_better: Optional[bool] = field(
+        default=train_args.greater_is_better, metadata={
+            "help": "Whether the `metric_for_best_model` should be maximized or not."}
     )
